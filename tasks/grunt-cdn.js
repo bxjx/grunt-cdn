@@ -18,7 +18,9 @@ module.exports = function(grunt) {
 		ejs: 'html'
 	};
 
-	var reghtml = new RegExp(/<(?:img|link|source|script).*\b(?:href|src)=['"]([^'"\{]+)['"].*\/?>/ig);
+	var htmlAttr = '(?:href|src|data-main)=[\'"]([^\'"\\{]+)[\'"]';
+	var regHtmlAttr = new RegExp(htmlAttr, 'ig');
+	var reghtml = new RegExp('<(?:img|link|source|script).*\\b' + htmlAttr + '.*\\/?>', 'ig');
 
 	var regcss = new RegExp(/url\(([^)]+)\)/ig);
 
@@ -49,9 +51,11 @@ module.exports = function(grunt) {
 	});
 
 	function html(content, filename, relativeTo) {
-        var self = this;
-		return content.replace(reghtml, function(match, resource) {
-			return match.replace(resource, cdnUrl.call(self, resource, filename, relativeTo));
+		var self = this;
+		return content.replace(reghtml, function(match) {
+			return match.replace(regHtmlAttr, function(match, resource){
+				return match.replace(resource, cdnUrl.call(self, resource, filename, relativeTo));
+			});
 		});
 	};
 
